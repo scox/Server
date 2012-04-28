@@ -17,6 +17,9 @@ import com.museum.logging.Log;
 public class Server {
 
     public static Log LOG = new Log();
+    public static int PORT = 4000;
+    public static String IP = "224.0.0.0";
+    public static int ipInt = 0;
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
@@ -40,4 +43,13 @@ public class Server {
 
         serverSocket.close();
     }
+    
+    
+    public static synchronized int getPort(){
+        
+        return PORT ++;
+        
+    }
+    
+
 }

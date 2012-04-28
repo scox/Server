@@ -18,7 +18,7 @@ import com.museum.server.Constants;
  */
 public class Log {
 
-    public void writeOutput(String output) {
+    public static void writeOutput(String output) {
 
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(

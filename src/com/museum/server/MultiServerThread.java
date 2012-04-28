@@ -23,8 +23,8 @@ public class MultiServerThread extends Thread {
 
         try {
             
-            new Log().writeOutput("Starting new server thread");
-            System.out.println("Starting Server");
+            Log.writeOutput("Starting new server thread");
+          
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(
@@ -38,6 +38,7 @@ public class MultiServerThread extends Thread {
             byte[] packet;
 
             //read in packet from client
+            try{
             while ((packet = in.readLine().getBytes()) != null) {
                    
                 String temp = new String(packet);
@@ -45,24 +46,27 @@ public class MultiServerThread extends Thread {
                 //put packet through the protocol and construct response packet
                 outputLine = p.processInput(temp);
                 
-                System.out.println(outputLine + " packet");
+                // do not send if ack packet is recieved.
                 if(!outputLine.substring(0, 1).equalsIgnoreCase("5")){
-                System.out.println(outputLine + " packet");
                 out.println(outputLine);
                 }
-                else{
-                    //Do not send response if client sent ACK
-//                    out.println();
-                }
-              
+                
             }
+            }
+            catch(Exception e){
+                
+                System.out.println("Waiting");
+                
+            }
+                
             out.close();
             in.close();
             socket.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("IO Exception");
+           Log.writeOutput("IO Exception");
         }
+        }
+ 
+            
     }
-}

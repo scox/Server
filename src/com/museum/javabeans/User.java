@@ -1,6 +1,8 @@
 
 package com.museum.javabeans;
 
+import com.museum.server.Server;
+
 /**
  *
  * @author Sam
@@ -15,6 +17,28 @@ public class User {
     private String language;
     private int memberPin;
     private String customerType;
+    private String assignedIP;
+    private int assignedPort;
+
+    public int getAssignedPort() {
+        return assignedPort;
+    }
+
+    public void setAssignedPort(int assignedPort) {
+        this.assignedPort = assignedPort;
+    }
+
+    
+    
+    public String getAssignedIP() {
+        return assignedIP;
+    }
+
+    public void setAssignedIP(String assignedIP) {
+        this.assignedIP = assignedIP;
+    }
+    
+    
 
     public String getCustomerType() {
         return customerType;
@@ -64,6 +88,28 @@ public class User {
 
     public void setUserID(int userID) {
         this.userID = userID;
+    }
+    
+    
+    
+   public synchronized String getIP(){
+           
+       
+       Server.ipInt = Server.ipInt+1;       
+       String lastChar = String.valueOf(Server.ipInt);
+           StringBuilder sb = new StringBuilder(Server.IP);
+           sb.replace(Server.IP.lastIndexOf("."), Server.IP.length(),"." +lastChar);
+
+        return sb.toString();
+        
+    }
+   
+      public synchronized int getPort(){
+        
+          Server.PORT = Server.PORT +1;
+ 
+          return Server.PORT;
+        
     }
     
     

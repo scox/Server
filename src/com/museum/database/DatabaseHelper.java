@@ -13,19 +13,23 @@ import com.museum.server.Constants;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import com.museum.javabeans.User;
+import com.museum.logging.Log;
+import com.museum.server.Protocol;
+import com.museum.server.Server;
 import java.util.List;
 import java.util.ArrayList;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Sam
+ * Date: 14/02/2012
+ * DatabaseHelper.java
+ * 
  */
 public class DatabaseHelper {
 
-    /**
-     * @param args the command line arguments
-     */
     private Connection conn;
 
     public void getConnection() {
@@ -77,8 +81,6 @@ public class DatabaseHelper {
             try {
 
                 getConnection();
-
-                System.out.println("here");
                 String query = "select track_info,filename from audio where a_level = ? "
                         + "and a_language = ? and exhibit_no = ?";
 
@@ -89,8 +91,7 @@ public class DatabaseHelper {
                 rs = pstmt.executeQuery();
                 // extract data from the ResultSet
                 while (rs.next()) {
-                    System.out.println("track exists");
-
+                    Log.writeOutput("Track Exists for user " + Protocol.u.getUserID());
                     Track track = new Track();
                     track.setTrackInfo(rs.getString(1));
                     track.setAudioLocation(rs.getString(2));
@@ -109,9 +110,9 @@ public class DatabaseHelper {
 
                 } catch (Exception e) {
                     t = null;
-                    //log here
+                    Log.writeOutput("Failed to retreive track");
                 }
-             
+
             }
 
             if (t.size() > 0) {
@@ -126,10 +127,10 @@ public class DatabaseHelper {
     //check the pin is for a leader/individual. synchronised to allow for shared access
     public User authenticateUser(String pin) {
         synchronized (this) {
-
             List<User> u = new ArrayList<User>();
             ResultSet rs = null;
 
+            System.out.println("pin" + pin);
             PreparedStatement pstmt = null;
             try {
 
@@ -144,6 +145,7 @@ public class DatabaseHelper {
                 // extract data from the ResultSet
                 while (rs.next()) {
 
+
                     User user = new User();
                     user.setLanguage(rs.getString("cust_language"));
                     user.setLevel(rs.getString("cust_level"));
@@ -153,27 +155,27 @@ public class DatabaseHelper {
                     user.setCustomerType(rs.getString("customer_type"));
                     u.add(user);
 
-
                 }
             } catch (Exception e) {
-                System.out.println(e + " exception");
+
                 u = null;
-                //log here
+                Log.writeOutput("Could not get user");
             } finally {
                 try {
                     rs.close();
                     pstmt.close();
                     conn.close();
                 } catch (SQLException e) {
-                    System.out.println(e + " sqlException");
+                    Log.writeOutput("Sql Exception" + e);
                     u = null;
                     //log here
                 }
 
             }
 
+
             if (!u.isEmpty()) {
-                System.out.print("users");
+                Log.writeOutput("User exists");
                 return u.get(0);
             } else {
                 System.out.print("no users");
@@ -182,11 +184,11 @@ public class DatabaseHelper {
 
         }
     }
-    
-    
+
 //check if the pin is for a member. //synchronised to allow for shared access
     public User authenticateMemberUser(String pin) {
         synchronized (this) {
+            System.out.println("CHecking group pin");
 
             List<User> u = new ArrayList<User>();
             ResultSet rs = null;
@@ -195,7 +197,7 @@ public class DatabaseHelper {
             try {
 
                 getConnection();
-                String query = "select transaction_id,pin, cust_language, cust_level,member_pin,customer_type from"
+                String query = "select transaction_id,pin, cust_language, cust_level,member_pin,customer_type,AssignedPort,AssignedIP from"
                         + " transaction where member_pin = ?";
 
                 pstmt = conn.prepareStatement(query); // create a statement
@@ -212,12 +214,14 @@ public class DatabaseHelper {
                     user.setUserID(rs.getInt("transaction_id"));
                     user.setMemberPin(rs.getInt("member_pin"));
                     user.setCustomerType(rs.getString("customer_type"));
+                    user.setAssignedIP(rs.getString("AssignedIP").trim());
+                    user.setAssignedPort(rs.getInt("AssignedPort"));
                     u.add(user);
 
 
                 }
             } catch (Exception e) {
-                System.out.println(e + " exception");
+                Log.writeOutput(e + " exception");
                 u = null;
                 //log here
             } finally {
@@ -226,7 +230,7 @@ public class DatabaseHelper {
                     pstmt.close();
                     conn.close();
                 } catch (SQLException e) {
-                    System.out.println(e + " sqlException");
+                    Log.writeOutput(e + " sqlException");
                     u = null;
                     //log here
                 }
@@ -234,7 +238,6 @@ public class DatabaseHelper {
             }
 
             if (!u.isEmpty()) {
-                System.out.print("users");
                 return u.get(0);
             } else {
                 System.out.print("no users");
@@ -243,5 +246,26 @@ public class DatabaseHelper {
 
         }
     }
-    
+
+    public void updateIP(User u, String ip, int port) {
+
+        try {
+
+            getConnection();
+
+            System.out.println("updating " + ip);
+            Statement stmt = conn.createStatement();
+
+            stmt.executeUpdate("UPDATE transaction SET AssignedIP = '" + ip + "', AssignedPort = '" + port +
+                    "' WHERE PIN =  '" + u.getPin() + "'");
+
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHelper.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+
+            closeConnection();
+        }
+
+    }
 }
