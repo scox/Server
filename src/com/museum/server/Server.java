@@ -45,11 +45,24 @@ public class Server {
     }
     
     
-    public static synchronized int getPort(){
+    public static synchronized int getNewPort(){
         
-        return PORT ++;
+        PORT = PORT +1;
+        System.out.println(PORT + "PORT");
+        
+        return PORT;
         
     }
     
+    public static synchronized String getNewIP(){
+        
+         ipInt = ipInt+1;       
+       String lastChar = String.valueOf(Server.ipInt);
+           StringBuilder sb = new StringBuilder(Server.IP);
+           sb.replace(Server.IP.lastIndexOf("."), Server.IP.length(),"." +lastChar);
+
+      return sb.toString();
+        
+    }
 
 }

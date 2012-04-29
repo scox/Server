@@ -30,10 +30,11 @@ public class MultiServerThread extends Thread {
                     new InputStreamReader(
                     socket.getInputStream()));
             
+            System.out.println("ip"  + socket.getInetAddress().toString().replace("/", ""));
 
             String outputLine;
             Protocol p = new Protocol();
-            outputLine = p.processInput(null);
+            outputLine = p.processInput(null,null);
             out.println(outputLine);
             byte[] packet;
 
@@ -44,7 +45,7 @@ public class MultiServerThread extends Thread {
                 String temp = new String(packet);
                 
                 //put packet through the protocol and construct response packet
-                outputLine = p.processInput(temp);
+                outputLine = p.processInput(temp,socket.getInetAddress().toString().replace("/", ""));
                 
                 // do not send if ack packet is recieved.
                 if(!outputLine.substring(0, 1).equalsIgnoreCase("5")){

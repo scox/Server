@@ -93,22 +93,17 @@ public class User {
     
     
    public synchronized void setIP(){
-           
-       
-       Server.ipInt = Server.ipInt+1;       
-       String lastChar = String.valueOf(Server.ipInt);
-           StringBuilder sb = new StringBuilder(Server.IP);
-           sb.replace(Server.IP.lastIndexOf("."), Server.IP.length(),"." +lastChar);
-
-       this.assignedIP = sb.toString();
+   
+       this.assignedIP = Server.getNewIP();
+       System.out.println(this.assignedIP);
         
     }
    
       public synchronized void setPort(){
         
-          Server.PORT = Server.PORT +1;
+         
  
-          this.assignedPort = Server.PORT;
+          this.assignedPort = Server.getNewPort();
         
     }
     

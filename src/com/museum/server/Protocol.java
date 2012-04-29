@@ -25,9 +25,8 @@ public class Protocol {
     private static String PREVIOUS_PACKET;
     public static User u = null;
 
-    public String processInput(String packet) {
-
-
+    public String processInput(String packet, String ip) {
+        
         Track t = new Track();
         System.out.println("Packet " + packet);
 
@@ -65,63 +64,53 @@ public class Protocol {
 
                 case PIN_AUTHENTICATION:
 
-                    
-                    //if ind send just port
+
+                    //if ind send just port get ip from users
                     //else send port and ip
-                    
-                
+
+
                     u = new DatabaseHelper().authenticateUser(packet.substring(1, 5));
-     
-                    
+
+
                     if (u != null) {
-                
-                         //get g streamer port after init and append
+
+                        //get g streamer port after init and append. IF USING CMD WAY WHAT OUTPUT WE NEED
                         u.setPort();
-                        theOutput = "111"+u.getAssignedPort() + ",";
-                        
-                        if(String.valueOf(u.getMemberPin()).trim().length() >0  ){
+                        theOutput = "111" + u.getAssignedPort() + ",";
+
+                        if (String.valueOf(u.getMemberPin()).trim().length() > 0) {
                             u.setIP();
-                            new DatabaseHelper().updateIP(u, u.getAssignedIP(),u.getAssignedPort());
-                           theOutput = theOutput + u.getAssignedIP();
+                            new DatabaseHelper().updateIP(u, u.getAssignedIP(), u.getAssignedPort());
+                            theOutput = theOutput + u.getAssignedIP();
+
+                        }
+                        else{
+                   
+                            u.setAssignedIP(ip);
                        
+                }  
+
+                        try {               
+                            
+
+                            Runtime.getRuntime().exec(new String[]{"bash",
+                                "-c",
+                                "gst-launch filesrc location=/home/.ogg ! oggdemux ! vorbisdec ! audioconvert ! audio/x-raw-int,channels=1,depth=16,width=16,rate=44100 ! rtpL16pay ! udpsink host="+u.getAssignedIP()+ " port="+u.getAssignedPort()+""});
+
+
+                        } catch (Exception e) {
+                            System.out.println(e + "e");
                         }
 
 
-                        
+                    } else {
 
-                       try{
-
-                       Runtime.getRuntime().exec(new String[]{"bash", "-c","gst-launch udpsrc multicast-group=224.0.0.2 port=12000 ! 'application/x-rtp,media=(string)audio, clock-rate=(int)44100, width=16,height=16, encoding-name=(string)L16, encoding-params=(string)1, channels=(int)1, channel-positions=(int)1, payload=(int)96' ! gstrtpjitterbuffer do-lost=true ! rtpL16depay ! audioconvert ! alsasink sync=false"});
-
-
-}catch(Exception e){
-System.out.println(e + "e" );
-};
-
-                   
-//                        GStreamer gs = new GStreamer();
-//                        gs.runGstreamer("/media/netbeans/ESD/example.ogg", "4001",
-//                                "164.11.222.72");
-
-
-//                        System.out.println("start g");
-//                        Runtime rt = Runtime.getRuntime();
-//                        Process proc = rt.exec("gst-launch filesrc location=/media/netbeans/ESD/example.ogg ! oggdemux ! vorbisdec ! audioconvert ! audio/x-raw-int,channels=1,depth=16,width=16,rate=44100 ! rtpL16pay ! udpsink host=224.0.0.1 port=12000");
-//                       System.out.println("stop g");
-
-
-
-                        
-                    } 
-              
-                    else {
-                 
                         u = new DatabaseHelper().authenticateMemberUser(packet.substring(1, 5));
                         System.out.println("checking group pin" + u.getAssignedIP());
-                        if (u != null && u.getAssignedIP().length() >0) {
-                            theOutput = "110" +u.getAssignedIP()+"," + u.getAssignedIP();
-                            
-                            
+                        if (u != null && u.getAssignedIP().length() > 0) {
+                            theOutput = "110" + u.getAssignedIP() + "," + u.getAssignedIP();
+
+
                         } else {
                             Log.writeOutput("No User exists or Leader has not logged in");
                             theOutput = "10";
@@ -133,7 +122,9 @@ System.out.println(e + "e" );
                 case REQUEST_TRACK:
 
                     // if mac address sent check db for room number and play first track
-
+                    
+                    //need to pass track in command line loop round!!!!!!!
+                    
                     //getting a track object for specific request
                     if (packet.length() < 4) {
                         t = new DatabaseHelper().getTrack(u, packet.substring(1, 1));
@@ -145,21 +136,17 @@ System.out.println(e + "e" );
                     if (t != null) {
 
                         theOutput = "2" + t.getAudioLocation();
-                        
-                        //
-                        
-                        
+
+
                     } else {
                         theOutput = "20";
                     }
-
-                    //Stream Audio
 
 
                     break;
 
                 case REQUEST_TRACK_INFO:
-       
+
                     t = new DatabaseHelper().getTrack(u, packet.substring(1));
 
                     if (t != null) {
@@ -190,26 +177,19 @@ System.out.println(e + "e" );
 
                 case GSTREAMER_SETUP:
 
-                  
-                   
-                    packet = "74000,127.1.1.1.1#";
+                    //need to call something diff
+                    //what am i calling this as no gstreamer
+                
                     
-               
-                    //7PORT,IP
-                    
-                    
-            
+                    //what do you need back
                     //IP is what GStreamers running on
                     //GET PORT USED FOR GSTREAM Start at 4000 - 5000 increment
                     //schronised so only one has acces
-                    
+
                     //if group send 7PORT,IP,
                     //else send 7PORT,
-                    //
-                    
-                    //
-                    
-                    theOutput = "127.1.1.1 4444";
+                   
+                    theOutput = "74000,127.1.1.1.1#";
 
                     break;
 
@@ -226,8 +206,7 @@ System.out.println(e + "e" );
             theOutput = "6";
         }
         PREVIOUS_PACKET = packet;
-        
-        
+
         System.out.println("output" + theOutput);
 
         return theOutput;
