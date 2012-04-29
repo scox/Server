@@ -92,7 +92,7 @@ public class User {
     
     
     
-   public synchronized String getIP(){
+   public synchronized void setIP(){
            
        
        Server.ipInt = Server.ipInt+1;       
@@ -100,15 +100,15 @@ public class User {
            StringBuilder sb = new StringBuilder(Server.IP);
            sb.replace(Server.IP.lastIndexOf("."), Server.IP.length(),"." +lastChar);
 
-        return sb.toString();
+       this.assignedIP = sb.toString();
         
     }
    
-      public synchronized int getPort(){
+      public synchronized void setPort(){
         
           Server.PORT = Server.PORT +1;
  
-          return Server.PORT;
+          this.assignedPort = Server.PORT;
         
     }
     

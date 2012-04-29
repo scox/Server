@@ -76,16 +76,41 @@ public class Protocol {
                     if (u != null) {
                 
                          //get g streamer port after init and append
-                        int port = u.getPort();
-                        theOutput = "111"+port + ",";
+                        u.setPort();
+                        theOutput = "111"+u.getAssignedPort() + ",";
                         
                         if(String.valueOf(u.getMemberPin()).trim().length() >0  ){
-                            String ip = u.getIP();
-                            new DatabaseHelper().updateIP(u, ip,port);
-                           theOutput = theOutput + ip; 
+                            u.setIP();
+                            new DatabaseHelper().updateIP(u, u.getAssignedIP(),u.getAssignedPort());
+                           theOutput = theOutput + u.getAssignedIP();
                        
                         }
-                      
+
+
+                        
+
+                       try{
+
+                       Runtime.getRuntime().exec(new String[]{"bash", "-c","gst-launch udpsrc multicast-group=224.0.0.2 port=12000 ! 'application/x-rtp,media=(string)audio, clock-rate=(int)44100, width=16,height=16, encoding-name=(string)L16, encoding-params=(string)1, channels=(int)1, channel-positions=(int)1, payload=(int)96' ! gstrtpjitterbuffer do-lost=true ! rtpL16depay ! audioconvert ! alsasink sync=false"});
+
+
+}catch(Exception e){
+System.out.println(e + "e" );
+};
+
+                   
+//                        GStreamer gs = new GStreamer();
+//                        gs.runGstreamer("/media/netbeans/ESD/example.ogg", "4001",
+//                                "164.11.222.72");
+
+
+//                        System.out.println("start g");
+//                        Runtime rt = Runtime.getRuntime();
+//                        Process proc = rt.exec("gst-launch filesrc location=/media/netbeans/ESD/example.ogg ! oggdemux ! vorbisdec ! audioconvert ! audio/x-raw-int,channels=1,depth=16,width=16,rate=44100 ! rtpL16pay ! udpsink host=224.0.0.1 port=12000");
+//                       System.out.println("stop g");
+
+
+
                         
                     } 
               
@@ -94,7 +119,7 @@ public class Protocol {
                         u = new DatabaseHelper().authenticateMemberUser(packet.substring(1, 5));
                         System.out.println("checking group pin" + u.getAssignedIP());
                         if (u != null && u.getAssignedIP().length() >0) {
-                            theOutput = "110" +u.getPort()+"," + u.getAssignedIP();
+                            theOutput = "110" +u.getAssignedIP()+"," + u.getAssignedIP();
                             
                             
                         } else {

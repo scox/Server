@@ -18,7 +18,8 @@ public class Track {
     }
 
     public void setAudioLocation(String audioLocation) {
-        this.audioLocation = audioLocation;
+
+        this.audioLocation =  "/media/audios/" + audioLocation;
     }
 
     public String getTrackInfo() {
